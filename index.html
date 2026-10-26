@@ -163,14 +163,33 @@ textarea{resize:vertical;min-height:70px}
 .mic{flex:0 0 auto!important;width:56px}
 .mic.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);animation:pulse 1.2s infinite}
 @keyframes pulse{50%{opacity:.6}}
-.pinbox{padding:20px 16px;display:grid;gap:10px;font-size:15px}
 @media (prefers-reduced-motion:reduce){.mic.on{animation:none}}
+.login{position:fixed;inset:0;z-index:50;background:var(--bg);display:grid;place-items:center;padding:24px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+.login-card{width:min(380px,100%);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:28px 24px;display:grid;gap:14px}
+.login-card .mark{font-size:24px}
+.login-card h1{margin:0;font-family:var(--display);font-stretch:105%;font-size:20px}
+.login-card input{font-size:16px;padding:12px}
+.login-card button{padding:12px;font-size:16px}
+.login-msg{min-height:20px;font-size:14px;color:var(--accent)}
+.who{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);min-width:0}
+.who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
 
+
+<div class="login" id="login" hidden>
+  <form class="login-card" id="loginForm">
+    <span class="mark">KRYSAN</span>
+    <h1>Generator ofert</h1>
+    <label>E-mail<input id="lgEmail" type="email" autocomplete="username" required></label>
+    <label>Hasło<input id="lgPass" type="password" autocomplete="current-password" required></label>
+    <button class="primary" id="lgBtn" type="submit">Zaloguj</button>
+    <div class="login-msg" id="loginMsg" aria-live="polite"></div>
+  </form>
+</div>
 
 <div class="tabs" role="tablist">
   <button id="tabEdit" aria-pressed="true">Edycja</button>
@@ -179,7 +198,7 @@ textarea{resize:vertical;min-height:70px}
 
 <div class="app">
   <aside class="edit" id="edit">
-    <div class="brandbar"><span class="mark">KRYSAN</span><small>Generator ofert Aksoylu</small></div>
+    <div class="brandbar"><span class="mark">KRYSAN</span><small>Generator ofert</small><div class="who"><span id="who"></span><button class="small ghost" id="btnLogout">Wyloguj</button></div></div>
     <div class="actions">
       <button class="primary" id="btnPdf">Pobierz PDF</button>
       <button id="btnMail">Wyślij mailem</button>
@@ -326,11 +345,6 @@ textarea{resize:vertical;min-height:70px}
 <button class="fab" id="fab" aria-label="Otwórz asystenta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.6A8 8 0 1 1 21 12z"/></svg>Utwórz ofertę rozmową</button>
 <section class="chat" id="chat" hidden aria-label="Asystent ofert">
   <div class="chat-hd"><b>Asystent ofert</b><div style="display:flex;gap:6px"><button class="small" id="chatReset">Od nowa</button><button class="small" id="chatClose" aria-label="Zamknij">Zamknij</button></div></div>
-  <div class="pinbox" id="pinbox" hidden>
-    <span>Wpisz kod dostępu do asystenta. Wystarczy zrobić to raz na tym urządzeniu.</span>
-    <input id="pinIn" type="password" inputmode="numeric" autocomplete="off" placeholder="Kod dostępu">
-    <button class="primary" id="pinOk">Zapisz kod</button>
-  </div>
   <div class="chat-log" id="chatLog" aria-live="polite"></div>
   <div class="chat-in" id="chatIn">
     <textarea id="chatText" placeholder="Napisz albo kliknij mikrofon i powiedz…" aria-label="Wiadomość"></textarea>
@@ -759,73 +773,112 @@ function bumpSeq(){
   if(m) store.set("krysan_seq", Math.max(store.get("krysan_seq")||0, +m[1]));
 }
 
+/* ===== Konto i dane w chmurze ===== */
+const API = "https://asystent.krysan.eu";
+const auth = { get token(){ return store.get("krysan_token")||""; }, get email(){ return store.get("krysan_email")||""; } };
+async function api(path, body){
+  const r = await fetch(API+path, {method:"POST", headers:{"Content-Type":"application/json","Authorization":"Bearer "+auth.token}, body:JSON.stringify(body||{})});
+  if(r.status === 401){ logout("Sesja wygasła. Zaloguj się ponownie."); throw new Error("auth"); }
+  if(!r.ok) throw new Error(String(r.status));
+  return r.json();
+}
+function showLogin(msg){ $("login").hidden = false; $("loginMsg").textContent = msg||""; setTimeout(()=>$("lgEmail").focus(), 50); }
+function logout(msg){ store.set("krysan_token",""); showLogin(msg); }
+$("loginForm").addEventListener("submit", async e=>{
+  e.preventDefault();
+  const btn = $("lgBtn"); btn.disabled = true; $("loginMsg").textContent = "Loguję…";
+  try{
+    const r = await fetch(API+"/login", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({email:$("lgEmail").value.trim(), password:$("lgPass").value})});
+    if(r.status === 401){ $("loginMsg").textContent = "Nieprawidłowy e-mail lub hasło."; return; }
+    if(!r.ok) throw new Error();
+    const d = await r.json();
+    store.set("krysan_token", d.token); store.set("krysan_email", d.email);
+    $("lgPass").value = ""; $("login").hidden = true; afterLogin();
+  }catch(_){ $("loginMsg").textContent = "Brak połączenia. Sprawdź internet i spróbuj ponownie."; }
+  finally{ btn.disabled = false; }
+});
+$("btnLogout").onclick = ()=>logout("");
+function afterLogin(){ $("who").textContent = auth.email; drawSaved(); drawTpls(); }
+async function newNo(){
+  try{ const d = await api("/seq"); return `OF/KRY/${new Date().getFullYear()}/${String(d.n).padStart(3,"0")}`; }
+  catch(e){ return nextNo(); }
+}
+
 /* ===== Szablony ===== */
-function tplList(){ return store.get("krysan_templates") || []; }
-function drawTpls(){
-  const L = tplList();
-  $("tpls").innerHTML = L.length ? L.map((t,i)=>`<div class="sitem"><div><b>${esc(t.name)}</b><span>${esc(t.state.product.name)}${t.state.price.base?" · "+money(t.state.price.base,t.state.offer.currency):""}</span></div>
+let TPL = [];
+async function drawTpls(){
+  try{ TPL = (await api("/data/list", {kind:"tpl"})).items; }
+  catch(e){ $("tpls").innerHTML = `<span class="status">Nie udało się wczytać szablonów.</span>`; return; }
+  $("tpls").innerHTML = TPL.length ? TPL.map((t,i)=>`<div class="sitem"><div><b>${esc(t.id)}</b><span>${esc(t.p||"")}${t.b?" · "+money(t.b,t.c):""}</span></div>
     <button class="small primary" data-tuse="${i}">Nowa oferta</button><button class="small ghost" data-trm="${i}">Usuń</button></div>`).join("")
     : `<span class="status">Brak szablonów. Skonfiguruj ofertę i zapisz ją poniżej.</span>`;
 }
-$("tplSave").onclick = ()=>{
+$("tplSave").onclick = async ()=>{
   const name = $("tplName").value.trim() || S.product.name;
   const t = clone(S);
   t.client = {company:"", person:"", nip:"", address:"", contact:""};
   delete t.offer.no; delete t.offer.date; delete t.offer.valid;
-  const L = tplList().filter(x=>x.name !== name);
-  L.unshift({name, state:t});
-  if(store.set("krysan_templates", L)){ $("tplName").value = ""; drawTpls(); status(`Zapisano szablon „${name}”.`); }
-  else status("Brak miejsca w przeglądarce. Usuń stare szablony lub zmniejsz liczbę zdjęć.");
+  status("Zapisuję szablon…");
+  try{
+    await api("/data/put", {kind:"tpl", id:name, value:t, meta:{p:S.product.name, b:S.price.base, c:S.offer.currency}});
+    $("tplName").value = ""; drawTpls(); status(`Zapisano szablon „${name}”.`);
+  }catch(e){ if(e.message!=="auth") status("Nie udało się zapisać szablonu. Spróbuj ponownie."); }
 };
-$("tpls").addEventListener("click", e=>{
+$("tpls").addEventListener("click", async e=>{
   const u = e.target.closest("[data-tuse]"), r = e.target.closest("[data-trm]");
   if(u){
-    bumpSeq();
-    const t = clone(tplList()[+u.dataset.tuse].state);
-    const now = new Date();
-    t.offer.no = nextNo(); t.offer.date = iso(now); t.offer.valid = iso(new Date(now.getTime()+14*864e5));
-    S = t; fillForm(); changed();
-    status(`Nowa oferta ${S.offer.no} z szablonu. Uzupełnij dane klienta.`);
-    const c = $("c_co"); c.closest("details").open = true; c.focus();
+    status("Wczytuję szablon…");
+    try{
+      const t = (await api("/data/get", {kind:"tpl", id:TPL[+u.dataset.tuse].id})).value;
+      const now = new Date();
+      t.offer.no = await newNo(); t.offer.date = iso(now); t.offer.valid = iso(new Date(now.getTime()+14*864e5));
+      S = t; fillForm(); changed();
+      status(`Nowa oferta ${S.offer.no} z szablonu. Uzupełnij dane klienta.`);
+      const c = $("c_co"); c.closest("details").open = true; c.focus();
+    }catch(e){ if(e.message!=="auth") status("Nie udało się wczytać szablonu."); }
   }
   if(r){
-    if(r.dataset.sure){ const L = tplList(); L.splice(+r.dataset.trm,1); store.set("krysan_templates",L); drawTpls(); }
+    if(r.dataset.sure){ try{ await api("/data/del", {kind:"tpl", id:TPL[+r.dataset.trm].id}); }catch(e){} drawTpls(); }
     else { r.dataset.sure = "1"; r.textContent = "Na pewno?"; }
   }
 });
 
 /* ===== Zapisane oferty ===== */
-function savedList(){ return store.get("krysan_offers") || []; }
-function drawSaved(){
-  const L = savedList();
-  $("saved").innerHTML = L.length ? L.map((o,i)=>`<div class="sitem"><div><b>${esc(o.no)}</b><span>${esc(o.client||"bez klienta")} · ${esc(o.model)}</span></div>
+let OFFERS = [];
+async function drawSaved(){
+  try{ OFFERS = (await api("/data/list", {kind:"offer"})).items; }
+  catch(e){ $("saved").innerHTML = `<span class="status">Nie udało się wczytać ofert.</span>`; return; }
+  $("saved").innerHTML = OFFERS.length ? OFFERS.map((o,i)=>`<div class="sitem"><div><b>${esc(o.id)}</b><span>${esc(o.c||"bez klienta")} · ${esc(o.m||"")}</span></div>
     <button class="small" data-open="${i}">Otwórz</button><button class="small ghost" data-rm="${i}">Usuń</button></div>`).join("")
     : `<span class="status">Brak zapisanych ofert.</span>`;
 }
-$("btnSave").onclick = ()=>{
-  const L = savedList().filter(o=>o.no !== S.offer.no);
-  L.unshift({no:S.offer.no, client:S.client.company||S.client.person, model:S.product.name, state:clone(S)});
-  if(store.set("krysan_offers", L.slice(0,40))){ bumpSeq(); status(`Zapisano ofertę ${S.offer.no}.`); drawSaved(); }
-  else status("Brak miejsca w przeglądarce. Usuń starsze oferty lub zdjęcia.");
+$("btnSave").onclick = async ()=>{
+  status("Zapisuję ofertę…");
+  try{
+    await api("/data/put", {kind:"offer", id:S.offer.no, value:S, meta:{c:(S.client.company||S.client.person||"").slice(0,80), m:S.product.name}});
+    bumpSeq(); status(`Zapisano ofertę ${S.offer.no}.`); drawSaved();
+  }catch(e){ if(e.message!=="auth") status("Nie udało się zapisać oferty. Spróbuj ponownie."); }
 };
-$("btnNew").onclick = ()=>{
+$("btnNew").onclick = async ()=>{
   bumpSeq();
   S = fromModel(S.model);
+  S.offer.no = await newNo();
   fillForm(); changed(); status("Nowa oferta "+S.offer.no+".");
 };
-$("saved").addEventListener("click", e=>{
+$("saved").addEventListener("click", async e=>{
   const o = e.target.closest("[data-open]"), r = e.target.closest("[data-rm]");
-  if(o){ S = clone(savedList()[+o.dataset.open].state); fillForm(); changed(); status("Otworzono "+S.offer.no+"."); }
+  if(o){
+    status("Wczytuję ofertę…");
+    try{ S = (await api("/data/get", {kind:"offer", id:OFFERS[+o.dataset.open].id})).value; fillForm(); changed(); status("Otworzono "+S.offer.no+"."); }
+    catch(e){ if(e.message!=="auth") status("Nie udało się wczytać oferty."); }
+  }
   if(r){
-    if(r.dataset.sure){ const L = savedList(); L.splice(+r.dataset.rm,1); store.set("krysan_offers",L); drawSaved(); }
+    if(r.dataset.sure){ try{ await api("/data/del", {kind:"offer", id:OFFERS[+r.dataset.rm].id}); }catch(e){} drawSaved(); }
     else { r.dataset.sure = "1"; r.textContent = "Na pewno?"; }
   }
 });
 
 /* ===== Asystent ===== */
-const API = "https://asystent.krysan.eu";
-const API_READY = true;
-if(!API_READY) $("fab").hidden = true;
 let chatMsgs = [];
 function chatAdd(role, text){
   if(role !== "sys") chatMsgs.push({role, content:text});
@@ -838,17 +891,13 @@ function chatGreet(){
     ? `Dzień dobry! Kontynuujemy ofertę dla ${S.client.company}. Co mam zmienić albo dopisać?`
     : "Dzień dobry! Przygotujmy ofertę. Dla jakiej firmy ma być ta oferta?");
 }
-function pinGet(){ return store.get("krysan_pin") || ""; }
 function chatOpen(){
   $("chat").hidden = false; $("fab").hidden = true;
-  const need = !pinGet();
-  $("pinbox").hidden = !need; $("chatIn").hidden = need; $("chatLog").hidden = need;
-  if(!need){ if(!chatMsgs.length) chatGreet(); $("chatText").focus(); } else $("pinIn").focus();
+  if(!chatMsgs.length) chatGreet(); $("chatText").focus();
 }
 $("fab").onclick = chatOpen;
-$("chatClose").onclick = ()=>{ $("chat").hidden = true; $("fab").hidden = !API_READY; };
+$("chatClose").onclick = ()=>{ $("chat").hidden = true; $("fab").hidden = false; };
 $("chatReset").onclick = chatGreet;
-$("pinOk").onclick = ()=>{ const v = $("pinIn").value.trim(); if(!v) return; store.set("krysan_pin", v); $("pinIn").value=""; chatOpen(); };
 
 function applyUpdate(u){
   if(u.model && CATALOG[u.model] && u.model !== S.model){
@@ -875,17 +924,14 @@ async function chatSend(){
     const state = clone(S); state.photos = state.photos.length + " zdjęć";
     const catalog = Object.fromEntries(Object.entries(CATALOG).map(([k,m])=>[k, m.label]));
     let msgs = chatMsgs.slice(); while(msgs.length && msgs[0].role !== "user") msgs.shift();
-    const r = await fetch(API, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({pin:pinGet(), messages:msgs, state, catalog})});
+    const d = await api("/chat", {messages:msgs, state, catalog});
     wait.remove();
-    if(r.status === 401){ store.set("krysan_pin",""); chatAdd("sys","Kod dostępu jest nieprawidłowy. Wpisz go ponownie."); chatOpen(); return; }
-    if(!r.ok) throw new Error(r.status);
-    const d = await r.json();
     (d.updates||[]).forEach(applyUpdate);
     if((d.updates||[]).length){ fillForm(); changed(); }
     chatAdd("assistant", d.text || "Zapisałem zmiany w ofercie.");
   }catch(e){
     wait.remove();
-    chatAdd("sys", "Nie udało się połączyć z asystentem. Sprawdź internet i spróbuj ponownie.");
+    if(e.message !== "auth") chatAdd("sys", "Nie udało się połączyć z asystentem. Sprawdź internet i spróbuj ponownie.");
   }finally{ btn.disabled = false; $("chatText").focus(); }
 }
 $("chatSend").onclick = chatSend;
@@ -913,7 +959,8 @@ matchMedia("(max-width:900px)").addEventListener("change", e=>{ if(!e.matches){ 
 if(matchMedia("(max-width:900px)").matches) $("view").hidden = true;
 
 addEventListener("resize", ()=>{ clearTimeout(t1); t1=setTimeout(render,150); });
-fillForm(); drawSaved(); drawTpls();
+fillForm();
+if(auth.token) afterLogin(); else showLogin();
 document.fonts.ready.then(render); render();
 </script>
 
