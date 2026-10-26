@@ -243,7 +243,7 @@ textarea{resize:vertical;min-height:70px}
 .nw-title>div:first-child{flex:1;min-width:0}
 .nw-title h1{font-family:var(--display);font-weight:300;font-size:46px;line-height:1;margin:8px 0 6px;letter-spacing:-.01em}
 .nw-price{text-align:right;flex:none}
-.nw-cl{margin-top:10px;font-size:13px;color:var(--p-muted)}
+.nw-cl{margin-top:10px;font-size:12.5px;line-height:1.55;color:var(--p-muted)}
 .nw-cl b{color:var(--p-ink)}
 .nw-price span{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--p-muted);font-weight:600}
 .nw-price b{display:block;font-family:var(--display);font-weight:500;font-size:30px;color:var(--p-red);margin-top:4px;white-space:nowrap}
@@ -388,7 +388,10 @@ textarea{resize:vertical;min-height:70px}
           <label>NIP<input id="c_nip" data-b="client.nip"></label>
         </div>
         <label>Adres<input id="c_adr" data-b="client.address"></label>
-        <label>E-mail / telefon<input id="c_ct" data-b="client.contact"></label>
+        <div class="row2">
+          <label>E-mail<input id="c_mail" type="email" data-b="client.email"></label>
+          <label>Telefon<input id="c_tel" type="tel" data-b="client.phone"></label>
+        </div>
         <div class="row2">
           <label>Numer oferty<input id="o_no" data-b="offer.no"></label>
           <label>Data wydania<input id="o_date" type="date" data-b="offer.date"></label>
@@ -614,7 +617,7 @@ function fromModel(key, keep){
   const now = new Date(), valid = new Date(now.getTime() + 14*864e5);
   const base = keep || {
     offer:{no:nextNo(), date:iso(now), valid:iso(valid), currency:"EUR", vat:23, from:m.from},
-    client:{company:"", person:"", nip:"", address:"", contact:""},
+    client:{company:"", person:"", nip:"", address:"", email:"", phone:""},
     seller:clone(SELLER), terms:clone(TERMS)
   };
   return Object.assign(base, {
@@ -638,7 +641,18 @@ const photoSrc = p => p === "DEFAULT" ? PHOTO : p;
 const money = (v, cur) => new Intl.NumberFormat("pl-PL",{style:"currency",currency:cur||"EUR",maximumFractionDigits:0}).format(v||0);
 
 /* ===== Formularz ===== */
+function migrateClient(c){
+  if(!c) return;
+  if(c.contact && !c.email && !c.phone){
+    const m = c.contact.match(/[^\s,;]+@[^\s,;]+/);
+    c.email = m ? m[0] : "";
+    c.phone = c.contact.replace(m ? m[0] : "", "").replace(/^[\s,;/·-]+|[\s,;/·-]+$/g, "");
+  }
+  delete c.contact;
+  c.email = c.email || ""; c.phone = c.phone || "";
+}
 function fillForm(){
+  migrateClient(S.client);
   const sel = $("model");
   sel.innerHTML = Object.entries(CATALOG).map(([k,m])=>`<option value="${k}">${esc(m.label)}</option>`).join("");
   sel.value = S.model;
@@ -770,7 +784,8 @@ function pages(){
   const from = O.from ? "od " : "";
   const photos = S.photos.map(photoSrc);
   const hasClient = C.company || C.person;
-  const clientLines = [C.person, C.nip && "NIP: "+C.nip, C.address, C.contact].filter(Boolean).map(esc).join(" · ");
+  const clientLines = [C.person, C.nip && "NIP: "+C.nip, C.address].filter(Boolean).map(esc).join(" · ");
+  const clientContact = [C.email, C.phone && "tel. "+C.phone].filter(Boolean).map(esc).join(" · ");
   const priceTxt = S.price.base ? from+money(t.net,cur) : "na zapytanie";
   const pickup = esc((S.terms.pickup||"").split(",")[0]||"–");
   const meta = `<table class="meta"><tr><td>Nr oferty</td><td>${esc(O.no)}</td></tr><tr><td>Data wydania</td><td>${plDate(O.date)}</td></tr><tr><td>Ważna do</td><td>${plDate(O.valid)}</td></tr></table>`;
@@ -780,7 +795,7 @@ function pages(){
       <div class="key"><span>Odbiór</span><b>${pickup}</b></div>
       <div class="key price"><span>Cena netto</span><b>${priceTxt}</b></div>
     </div>`;
-  const clientBox = hasClient ? `<div class="client"><div class="lbl">Przygotowano dla</div><div><b>${esc(C.company||C.person)}</b>${clientLines?`<br>${clientLines}`:""}</div></div>` : "";
+  const clientBox = hasClient ? `<div class="client"><div class="lbl">Przygotowano dla</div><div><b>${esc(C.company||C.person)}</b>${clientLines?`<br>${clientLines}`:""}${clientContact?`<br>${clientContact}`:""}</div></div>` : "";
   const sumP = `<div><div class="h2">Opis produktu</div><p class="lead-p">${esc(P.summary)}</p></div>`;
 
   let p1, p1cls = "";
@@ -789,7 +804,7 @@ function pages(){
     p1 = `<div class="nw-photo" style="background-image:url('${photos[0]||""}')"></div>
       <div class="nw-in">
         <div class="hdn"><div class="logo">KRYSAN</div>${meta}</div>
-        <div class="nw-title"><div><div class="eye">Oferta handlowa</div><h1>${esc(P.name)}</h1><div class="sub">${esc(P.type)}</div>${hasClient ? `<div class="nw-cl">Dla: <b>${esc(C.company||C.person)}</b></div>` : ""}</div>
+        <div class="nw-title"><div><div class="eye">Oferta handlowa</div><h1>${esc(P.name)}</h1><div class="sub">${esc(P.type)}</div>${hasClient ? `<div class="nw-cl">Dla: <b>${esc(C.company||C.person)}</b>${clientLines?`<br>${clientLines}`:""}${clientContact?`<br>${clientContact}`:""}</div>` : ""}</div>
           <div class="nw-price"><span>Cena netto</span><b>${priceTxt}</b></div></div>
         <div class="keys k3">
           <div class="key"><span>Rok produkcji</span><b>${esc(P.year)}</b></div>
@@ -799,7 +814,7 @@ function pages(){
         ${sumP}
       </div>`;
   } else if(th === "premium"){
-    const cl = [C.company, C.person, C.address].filter(Boolean).map(esc).join("<br>");
+    const cl = [C.company, C.person, C.address, C.email, C.phone && "tel. "+C.phone].filter(Boolean).map(esc).join("<br>");
     p1 = `${header()}
       <div class="letter"><div class="addr">${cl || "&nbsp;"}</div>${meta}</div>
       <div class="ofh">Oferta.</div>
@@ -814,7 +829,7 @@ function pages(){
         <div class="eye">Oferta handlowa</div>
         <h1>${esc(P.name)}</h1>
         <div class="sub">${esc(P.type)}</div>
-        ${hasClient ? `<div class="cv-cl">Dla: <b>${esc(C.company||C.person)}</b></div>` : ""}
+        ${hasClient ? `<div class="cv-cl">Dla: <b>${esc(C.company||C.person)}</b>${clientLines?`<br>${clientLines}`:""}${clientContact?`<br>${clientContact}`:""}</div>` : ""}
         ${keys}
       </div></div>`;
   } else if(th === "techniczny"){
@@ -970,7 +985,7 @@ $("btnMail").onclick = async ()=>{
       catch(e){ status(e.name==="AbortError" ? "Wysyłanie anulowane." : "Nie udało się otworzyć udostępniania."); }
     } else {
       pdf.save(name);
-      const to = (S.client.contact.match(/[^\s,;]+@[^\s,;]+/)||[""])[0];
+      const to = (S.client.email||"").trim();
       location.href = `mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
       status("PDF pobrany, otwieram program pocztowy. Dołącz pobrany plik jako załącznik.");
     }
@@ -1026,7 +1041,7 @@ async function drawTpls(){
 $("tplSave").onclick = async ()=>{
   const name = $("tplName").value.trim() || S.product.name;
   const t = clone(S);
-  t.client = {company:"", person:"", nip:"", address:"", contact:""};
+  t.client = {company:"", person:"", nip:"", address:"", email:"", phone:""};
   delete t.offer.no; delete t.offer.date; delete t.offer.valid;
   status("Zapisuję szablon…");
   try{
@@ -1113,6 +1128,12 @@ function applyUpdate(u){
   if(u.model && CATALOG[u.model] && u.model !== S.model){
     const keep = {offer:S.offer, client:S.client, seller:S.seller, terms:S.terms};
     S = fromModel(u.model, keep); S.offer.from = CATALOG[u.model].from;
+  }
+  if(u.client && u.client.contact){
+    const c = u.client.contact, m = c.match(/[^\s,;]+@[^\s,;]+/), ph = c.replace(m ? m[0] : "", "").replace(/^[\s,;/·-]+|[\s,;/·-]+$/g, "");
+    if(m) u.client.email = m[0];
+    if(ph) u.client.phone = ph;
+    delete u.client.contact;
   }
   ["client","product","offer","terms"].forEach(k=>{ if(u[k]) Object.assign(S[k], u[k]); });
   if(u.price){ if(u.price.base!=null) S.price.base = +u.price.base||0; if(u.price.discount!=null) S.price.discount = +u.price.discount||0; }
