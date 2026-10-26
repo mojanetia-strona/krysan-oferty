@@ -7,7 +7,7 @@
 <title>Generator ofert KRYSAN</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&family=Barlow:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..800&family=Barlow:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap">
 <style>
 /* Layout: narzędzie dwupanelowe. Lewy panel = formularz, prawy = podgląd arkuszy A4 (papier zawsze jasny, marka KRYSAN czerń + czerwień). */
 :root{
@@ -86,7 +86,12 @@ textarea{resize:vertical;min-height:70px}
 .eye{font-family:var(--display);font-stretch:110%;font-weight:700;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--p-red)}
 .ttl h1{font-family:var(--display);font-weight:800;font-stretch:105%;font-size:30px;line-height:1.05;margin:4px 0 2px;letter-spacing:-.005em}
 .ttl .sub{color:var(--p-muted);font-size:13px}
-.meta{display:grid;grid-template-columns:auto auto;gap:2px 12px;font-size:11.5px;margin:0;white-space:nowrap}
+.ttl>div:first-child{flex:1;min-width:0}
+.meta{border-collapse:collapse;font-size:11.5px;white-space:nowrap}
+.meta td{padding:1px 0}
+.meta td:first-child{color:var(--p-muted);text-align:right;padding-right:12px}
+.meta td:last-child{font-weight:600;font-variant-numeric:tabular-nums}
+.meta{flex:none;display:grid;grid-template-columns:auto auto;gap:2px 12px;font-size:11.5px;margin:0;white-space:nowrap}
 .meta dt{color:var(--p-muted);text-align:right}
 .meta dd{margin:0;font-weight:600;font-variant-numeric:tabular-nums}
 .client{display:grid;grid-template-columns:120px 1fr;gap:10px;background:var(--p-soft);border-radius:4px;padding:12px 16px;font-size:12px}
@@ -131,6 +136,99 @@ textarea{resize:vertical;min-height:70px}
 .fine{font-size:9.5px;color:var(--p-muted);line-height:1.5}
 .ft{height:46px;display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--p-muted);border-top:1px solid var(--p-line);margin-top:14px}
 .over{position:absolute;inset:auto 0 0 0;height:4px;background:var(--p-red)}
+
+/* ===== Motyw B: Premium (wzór BMW) ===== */
+.t-premium{--p-red:#c8102e;font-family:var(--body)}
+.t-premium .pg-body{gap:16px}
+.hdp{display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:6px}
+.hdp-name{font-family:var(--body);font-weight:600;font-size:30px;color:#8a8a8a;letter-spacing:-.01em;line-height:1.1}
+.hdp-sub{font-size:13px;color:#2a2a2a;margin-top:4px}
+.t-premium .logo{font-size:12px;color:var(--p-red);border:1.5px solid #c9c9c9;border-radius:50%;width:84px;height:84px;justify-content:center;letter-spacing:.08em;font-stretch:100%;flex:none}
+.t-premium .logo::before{display:none}
+.letter{display:flex;justify-content:space-between;align-items:flex-start;font-size:12.5px;line-height:1.55;margin-top:6px}
+.letter .addr{min-height:54px}
+.ofh{font-family:var(--body);font-weight:700;font-size:15px;letter-spacing:.02em;text-transform:uppercase}
+.intro{font-size:12.5px;line-height:1.55}
+.intro p{margin:0 0 6px}
+.intro .sig{margin-top:10px}
+.intro small{color:#6a6a6a}
+.t-premium .hero{height:auto;background:none;text-align:center}
+.t-premium .hero img{max-height:330px;max-width:100%}
+.t-premium .keys{border-color:#1a1a1a;border-width:1px 0}
+.t-premium .key b{font-family:var(--body);font-weight:600}
+.t-premium .key.price b{color:#1a1a1a}
+.t-premium .ttl{border-bottom:1px solid #1a1a1a}
+.t-premium .eye{color:#1a1a1a;font-family:var(--body);letter-spacing:.02em;font-size:12px}
+.t-premium .ttl h1{font-family:var(--body);font-weight:600;font-size:22px}
+.t-premium .h2{font-family:var(--body);letter-spacing:.02em;font-size:12px}
+.t-premium .h2::after{background:#1a1a1a}
+.t-premium .tbl tr:nth-child(even) td{background:#f3f3f3}
+.t-premium .tbl td{padding:5px 6px;border-bottom:0}
+.t-premium .tbl tr.grp td{color:#1a1a1a;background:none}
+.t-premium .cols2 li::before{background:#9a9a9a}
+.t-premium .sum .gross{background:none;color:#1a1a1a;border-top:2px solid #1a1a1a;border-radius:0;padding:8px 0;font-family:var(--body);font-weight:700}
+.t-premium .sum .gross span:last-child{color:#1a1a1a}
+.t-premium .contact{background:#f3f3f3;color:#1a1a1a}
+.t-premium .contact h3,.t-premium .contact .who b{color:#1a1a1a}
+.t-premium .contact p{color:#555}
+.t-premium .contact .who{border-left-color:#9a9a9a}
+
+/* ===== Motyw C: Okładka ze zdjęciem ===== */
+.pg.cover{padding:0}
+.pg.cover .pg-body{gap:0}
+.cv{flex:1;background:#222 center/cover no-repeat;position:relative;display:flex;flex-direction:column;justify-content:space-between;color:#fff}
+.cv::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.55) 0%,rgba(0,0,0,0) 28%,rgba(0,0,0,0) 45%,rgba(0,0,0,.88) 78%)}
+.cv-top,.cv-bot{position:relative;padding:44px 54px}
+.cv-top{display:flex;justify-content:space-between;align-items:flex-start}
+.cv-top .logo{color:#fff;font-size:30px}
+.cv-top .logo::before{background:var(--p-red)}
+.cv-no{text-align:right;font-size:12px;line-height:1.6;color:#e6e6e6}
+.cv .eye{color:#ff3b4f}
+.cv h1{font-family:var(--display);font-weight:800;font-stretch:112%;font-size:52px;line-height:1;margin:8px 0 6px}
+.cv .sub{font-size:15px;color:#e0e0e0}
+.cv-cl{margin-top:14px;font-size:14px;color:#e6e6e6}
+.cv .keys{margin-top:26px;border-color:rgba(255,255,255,.35)}
+.cv .key{border-left-color:rgba(255,255,255,.25)}
+.cv .key span{color:#cfcfcf}
+.cv .key b{color:#fff}
+.cv .key.price b{color:#ff3b4f}
+.hdl{display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:3px solid var(--p-red)}
+.hdl .logo{color:var(--p-ink);font-size:24px}
+.co2{text-align:right;font-size:11px;color:var(--p-muted);line-height:1.55}
+.t-foto .ttl{border-bottom:0;padding-bottom:0}
+.t-foto .ttl h1{font-size:34px;font-stretch:112%}
+.t-foto .gal.one{grid-template-columns:1fr}
+.t-foto .gal.one div{height:200px}
+
+/* ===== Motyw D: Karta techniczna ===== */
+.t-techniczny{background:#f4f3f1}
+.t-techniczny .hdl{border-bottom:1px solid #1d1d1d}
+.t-techniczny .hdl .logo{font-size:22px}
+.t-techniczny .ttl{border:1px solid #1d1d1d;padding:14px 16px;background:#fff;align-items:stretch}
+.t-techniczny .ttl h1{font-size:28px}
+.t-techniczny .meta{border-left:1px solid #1d1d1d;padding-left:16px;align-content:center}
+.t-techniczny .client{background:#fff;border:1px solid #d6d4d0;border-radius:0}
+.tsplit{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start}
+.tsplit .hero{height:250px;border-radius:0}
+.qt{width:100%;border-collapse:collapse;font-size:11.5px;background:#fff}
+.qt td{padding:6px 8px;border:1px solid #d6d4d0;vertical-align:top}
+.qt td:first-child{color:var(--p-muted);width:42%}
+.qt td:last-child{font-weight:600}
+.t-techniczny .keys{background:#1d1d1d;border:0}
+.t-techniczny .key{border-left-color:#3a3a3a;padding-left:14px}
+.t-techniczny .key:first-child{padding-left:14px}
+.t-techniczny .key span{color:#a9a9a9}
+.t-techniczny .key b{color:#fff}
+.t-techniczny .key.price b{color:#ff3b4f}
+.t-techniczny .tbl{background:#fff}
+.t-techniczny .tbl td{padding:6px 10px;border:1px solid #d6d4d0}
+.t-techniczny .tbl tr.grp td{background:#1d1d1d;color:#fff;border-color:#1d1d1d;padding:5px 10px}
+.t-techniczny .h2::after{background:#1d1d1d}
+.t-techniczny .sum{background:#fff;border:1px solid #1d1d1d;padding:10px 14px}
+.t-techniczny .sum .gross{border-radius:0}
+.t-techniczny .term{border-bottom-color:#d6d4d0}
+.t-techniczny .contact{border-radius:0}
+.t-techniczny .ft{border-top-color:#1d1d1d}
 
 #render{position:fixed;left:-10000px;top:0}
 
@@ -216,6 +314,13 @@ textarea{resize:vertical;min-height:70px}
           <button class="small" id="tplSave">Zapisz</button>
         </div>
         <span class="status">Szablon zapamiętuje model, zdjęcia, ceny, opcje, specyfikację i warunki. Bez danych klienta.</span>
+      </div>
+    </details>
+
+    <details open>
+      <summary>Wygląd oferty</summary>
+      <div class="fields">
+        <label>Styl dokumentu<select id="o_theme" data-b="offer.theme"></select></label>
       </div>
     </details>
 
@@ -499,6 +604,8 @@ function fillForm(){
   const sel = $("model");
   sel.innerHTML = Object.entries(CATALOG).map(([k,m])=>`<option value="${k}">${esc(m.label)}</option>`).join("");
   sel.value = S.model;
+  $("o_theme").innerHTML = Object.entries(THEMES).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join("");
+  if(!THEMES[S.offer.theme]) S.offer.theme = "klasyczny";
   document.querySelectorAll("[data-b]").forEach(el=>{
     const v = getP(el.dataset.b);
     if(el.type === "checkbox") el.checked = !!v; else el.value = v ?? "";
@@ -600,8 +707,18 @@ function totals(){
   return {extra, net, vat, gross: net+vat};
 }
 
+const THEMES = {
+  klasyczny:"A · Klasyczny (czarno-czerwony)",
+  premium:"B · Premium (jak oferta BMW)",
+  foto:"C · Okładka ze zdjęciem",
+  techniczny:"D · Karta techniczna"
+};
+const theme = () => THEMES[S.offer.theme] ? S.offer.theme : "klasyczny";
+
 function header(){
-  const s = S.seller;
+  const s = S.seller, t = theme();
+  if(t === "premium") return `<div class="hdp"><div><div class="hdp-name">${esc(s.company)}</div><div class="hdp-sub">Dealer autotransporterów Aksoylu</div></div><div class="logo">KRYSAN</div></div>`;
+  if(t === "foto" || t === "techniczny") return `<div class="hdl"><div class="logo">KRYSAN</div><div class="co2">${esc(s.company)} · ${esc(s.address)}<br>NIP ${esc(s.nip)} · tel. ${esc(s.phone)}</div></div>`;
   return `<div class="hd"><div class="logo">KRYSAN</div>
     <div class="co"><b>${esc(s.company.toUpperCase())}</b><br>${esc(s.address)}<br>NIP: ${esc(s.nip)} | Tel: ${esc(s.phone)}</div></div>`;
 }
@@ -610,24 +727,60 @@ function footer(n, total){
 }
 
 function pages(){
-  const P = S.product, O = S.offer, C = S.client, cur = O.currency, t = totals();
+  const P = S.product, O = S.offer, C = S.client, cur = O.currency, t = totals(), th = theme();
   const from = O.from ? "od " : "";
   const photos = S.photos.map(photoSrc);
   const hasClient = C.company || C.person;
   const clientLines = [C.person, C.nip && "NIP: "+C.nip, C.address, C.contact].filter(Boolean).map(esc).join(" · ");
-
-  const p1 = `${header()}
-    <div class="ttl"><div><div class="eye">Oferta handlowa</div><h1>${esc(P.name)}</h1><div class="sub">${esc(P.type)}</div></div>
-      <dl class="meta"><dt>Nr oferty</dt><dd>${esc(O.no)}</dd><dt>Data wydania</dt><dd>${plDate(O.date)}</dd><dt>Ważna do</dt><dd>${plDate(O.valid)}</dd></dl></div>
-    ${hasClient ? `<div class="client"><div class="lbl">Przygotowano dla</div><div><b>${esc(C.company||C.person)}</b>${clientLines?`<br>${clientLines}`:""}</div></div>` : ""}
-    <div class="hero" style="background-image:url('${photos[0]||""}')"></div>
-    <div class="keys">
+  const priceTxt = S.price.base ? from+money(t.net,cur) : "na zapytanie";
+  const pickup = esc((S.terms.pickup||"").split(",")[0]||"–");
+  const meta = `<table class="meta"><tr><td>Nr oferty</td><td>${esc(O.no)}</td></tr><tr><td>Data wydania</td><td>${plDate(O.date)}</td></tr><tr><td>Ważna do</td><td>${plDate(O.valid)}</td></tr></table>`;
+  const keys = `<div class="keys">
       <div class="key"><span>Rok produkcji</span><b>${esc(P.year)}</b></div>
       <div class="key"><span>Pojemność</span><b>${esc(P.capacity||"–")}</b></div>
-      <div class="key"><span>Odbiór</span><b>${esc((S.terms.pickup||"").split(",")[0]||"–")}</b></div>
-      <div class="key price"><span>Cena netto</span><b>${S.price.base ? from+money(t.net,cur) : "na zapytanie"}</b></div>
-    </div>
-    <div><div class="h2">Opis produktu</div><p class="lead-p">${esc(P.summary)}</p></div>`;
+      <div class="key"><span>Odbiór</span><b>${pickup}</b></div>
+      <div class="key price"><span>Cena netto</span><b>${priceTxt}</b></div>
+    </div>`;
+  const clientBox = hasClient ? `<div class="client"><div class="lbl">Przygotowano dla</div><div><b>${esc(C.company||C.person)}</b>${clientLines?`<br>${clientLines}`:""}</div></div>` : "";
+  const sumP = `<div><div class="h2">Opis produktu</div><p class="lead-p">${esc(P.summary)}</p></div>`;
+
+  let p1, p1cls = "";
+  if(th === "premium"){
+    const cl = [C.company, C.person, C.address].filter(Boolean).map(esc).join("<br>");
+    p1 = `${header()}
+      <div class="letter"><div class="addr">${cl || "&nbsp;"}</div>${meta}</div>
+      <div class="ofh">Oferta.</div>
+      <div class="intro"><p>Dzień dobry,</p><p>bardzo dziękujemy za zainteresowanie naszymi produktami. Poniżej przedstawiamy indywidualną ofertę na ${esc(P.name)}.</p><p>W przypadku dodatkowych pytań zapraszamy do kontaktu.</p><p class="sig">${esc(S.seller.person)}<br><small>tel. ${esc(S.seller.phone)}</small></p></div>
+      <div class="hero"><img src="${photos[0]||""}" alt=""></div>
+      ${keys}`;
+  } else if(th === "foto"){
+    p1cls = "cover";
+    p1 = `<div class="cv" style="background-image:url('${photos[0]||""}')">
+      <div class="cv-top"><div class="logo">KRYSAN</div><div class="cv-no">Oferta ${esc(O.no)}<br>${plDate(O.date)}</div></div>
+      <div class="cv-bot">
+        <div class="eye">Oferta handlowa</div>
+        <h1>${esc(P.name)}</h1>
+        <div class="sub">${esc(P.type)}</div>
+        ${hasClient ? `<div class="cv-cl">Dla: <b>${esc(C.company||C.person)}</b></div>` : ""}
+        ${keys}
+      </div></div>`;
+  } else if(th === "techniczny"){
+    const quick = S.specs.filter(x=>x.l&&x.v).slice(0,7).map(x=>`<tr><td>${esc(x.l)}</td><td>${esc(x.v)}</td></tr>`).join("");
+    p1 = `${header()}
+      <div class="ttl"><div><div class="eye">Oferta handlowa · karta produktu</div><h1>${esc(P.name)}</h1><div class="sub">${esc(P.type)}</div></div>${meta}</div>
+      ${clientBox}
+      <div class="tsplit"><div class="hero" style="background-image:url('${photos[0]||""}')"></div>
+        <div><div class="h2">Dane podstawowe</div><table class="qt">${quick}</table></div></div>
+      ${keys}
+      ${sumP}`;
+  } else {
+    p1 = `${header()}
+      <div class="ttl"><div><div class="eye">Oferta handlowa</div><h1>${esc(P.name)}</h1><div class="sub">${esc(P.type)}</div></div>${meta}</div>
+      ${clientBox}
+      <div class="hero" style="background-image:url('${photos[0]||""}')"></div>
+      ${keys}
+      ${sumP}`;
+  }
 
   const sel = S.opts.filter(o=>o.on && o.n);
   let optRows = "", last=null;
@@ -637,13 +790,16 @@ function pages(){
   const T = S.terms;
   const termRows = [["Termin dostawy",T.delivery],["Warunki płatności",T.payment],["Gwarancja",T.warranty],["Finansowanie",T.financing],["Miejsce odbioru",T.pickup],["Ważność oferty",plDate(O.valid)]]
     .filter(r=>r[1]).map(r=>`<div class="term"><span>${r[0]}</span><b>${esc(r[1])}</b></div>`).join("");
+  const L = th === "premium"
+    ? {cfg:"Twoja konfiguracja.", std:"Wyposażenie standardowe.", terms:"Warunki.", spec:"Informacje techniczne."}
+    : {cfg:"Konfiguracja i cena", std:"Wyposażenie standardowe", terms:"Warunki", spec:"Specyfikacja techniczna"};
 
   const p2 = `${header()}
-    <div class="ttl"><div><div class="eye">Konfiguracja i cena</div><h1>${esc(P.name)}</h1></div>
-      <dl class="meta"><dt>Nr oferty</dt><dd>${esc(O.no)}</dd><dt>Ceny</dt><dd>netto, ${esc(cur)}</dd></dl></div>
+    <div class="ttl"><div><div class="eye">${L.cfg}</div><h1>${esc(P.name)}</h1></div>
+      <table class="meta"><tr><td>Nr oferty</td><td>${esc(O.no)}</td></tr><tr><td>Ceny</td><td>netto, ${esc(cur)}</td></tr></table></div>
     <table class="tbl"><tr class="base"><td>${esc(P.name)}${P.year?`, rok produkcji ${esc(P.year)}`:""}</td><td class="r">${S.price.base ? from+money(S.price.base,cur) : "na zapytanie"}</td></tr>
       ${sel.length ? optRows : ""}</table>
-    ${std.length ? `<div><div class="h2">Wyposażenie standardowe</div><ul class="cols2">${std.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>` : ""}
+    ${std.length ? `<div><div class="h2">${L.std}</div><ul class="cols2">${std.map(s=>`<li>${esc(s)}</li>`).join("")}</ul></div>` : ""}
     ${S.price.base ? `<div class="sum">
       <div><span>Cena bazowa netto</span><span>${money(S.price.base,cur)}</span></div>
       ${t.extra ? `<div><span>Wyposażenie dodatkowe</span><span>${money(t.extra,cur)}</span></div>` : ""}
@@ -653,7 +809,7 @@ function pages(){
       <div class="gross"><span>Razem brutto</span><span>${from}${money(t.gross,cur)}</span></div>
       ${O.from ? `<div class="fromnote">Cena ostateczna zależy od wybranej konfiguracji.</div>` : ""}
     </div>` : ""}
-    <div><div class="h2">Warunki</div><div class="terms">${termRows}</div></div>
+    <div><div class="h2">${L.terms}</div><div class="terms">${termRows}</div></div>
     ${T.notes ? `<p class="lead-p" style="font-size:12px">${esc(T.notes)}</p>` : ""}`;
 
   let specRows = ""; last=null;
@@ -662,20 +818,21 @@ function pages(){
   const gal = photos.slice(1,4);
   const sl = S.seller;
   const p3 = `${header()}
-    <div class="ttl"><div><div class="eye">Specyfikacja techniczna</div><h1>${esc(P.name)}</h1></div></div>
+    <div class="ttl"><div><div class="eye">${L.spec}</div><h1>${esc(P.name)}</h1></div></div>
     <table class="tbl">${specRows}</table>
+    ${th === "foto" && !gal.length && photos[0] ? `<div class="gal one"><div style="background-image:url('${photos[0]}')"></div></div>` : ""}
     ${gal.length ? `<div class="gal">${gal.map(g=>`<div style="background-image:url('${g}')"></div>`).join("")}</div>` : ""}
     <div style="margin-top:auto;display:grid;gap:12px">
       <div class="contact"><div><h3>Zapraszamy do kontaktu i rezerwacji</h3><p>Chętnie przygotujemy konfigurację pod Państwa flotę i omówimy finansowanie.</p></div>
         <div class="who"><b>${esc(sl.person)}</b><br>tel. ${esc(sl.phone)}${sl.email?`<br>${esc(sl.email)}`:""}<br>${esc(sl.address)}</div></div>
       <p class="fine">Niniejsza oferta ma charakter informacyjny i nie stanowi oferty w rozumieniu art. 66 § 1 Kodeksu cywilnego. Ceny podano w kwotach netto, do których należy doliczyć podatek VAT. Masy i wymiary są wartościami przybliżonymi, podanymi bez wyposażenia dodatkowego. Zdjęcia mają charakter poglądowy i mogą przedstawiać wyposażenie dodatkowe. Producent zastrzega sobie prawo do zmian konstrukcyjnych.</p>
     </div>`;
-  return [p1,p2,p3];
+  return [{html:p1, cls:p1cls}, {html:p2}, {html:p3}];
 }
 
 function buildPages(container){
-  const list = pages();
-  container.innerHTML = list.map((h,i)=>`<div class="pg"><div class="pg-body">${h}</div>${footer(i+1,list.length)}</div>`).join("");
+  const list = pages(), th = theme();
+  container.innerHTML = list.map((p,i)=>`<div class="pg t-${th} ${p.cls||""}"><div class="pg-body">${p.html}</div>${p.cls==="cover" ? "" : footer(i+1,list.length)}</div>`).join("");
   return [...container.querySelectorAll(".pg")];
 }
 
