@@ -824,7 +824,7 @@ $("saved").addEventListener("click", e=>{
 
 /* ===== Asystent ===== */
 const API = "https://asystent.krysan.eu";
-const API_READY = false; // włączyć po wdrożeniu Workera
+const API_READY = true;
 if(!API_READY) $("fab").hidden = true;
 let chatMsgs = [];
 function chatAdd(role, text){
