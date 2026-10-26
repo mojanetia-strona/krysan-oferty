@@ -144,6 +144,27 @@ textarea{resize:vertical;min-height:70px}
   body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
   .brandbar{position:static}
 }
+
+/* ===== Asystent (czat) ===== */
+.fab{position:fixed;right:max(20px,env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:20;background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:14px 20px;font-size:16px;font-weight:700;box-shadow:0 6px 20px rgba(0,0,0,.25);display:flex;align-items:center;gap:8px}
+.fab svg{width:20px;height:20px}
+.chat{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);z-index:30;background:var(--panel);border-left:1px solid var(--line);display:flex;flex-direction:column;box-shadow:-10px 0 30px rgba(0,0,0,.18);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.chat-hd{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line);padding-right:max(16px,env(safe-area-inset-right,0px))}
+.chat-hd b{font-family:var(--display);font-stretch:110%;font-size:16px;letter-spacing:.04em}
+.chat-log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;font-size:16px;line-height:1.5}
+.msg{max-width:88%;padding:10px 14px;border-radius:14px;white-space:pre-wrap;word-wrap:break-word}
+.msg.a{background:var(--soft);align-self:flex-start;border-bottom-left-radius:4px}
+.msg.u{background:var(--accent);color:var(--accent-ink);align-self:flex-end;border-bottom-right-radius:4px}
+.msg.sys{align-self:center;background:none;color:var(--muted);font-size:13px;padding:0}
+.chat-in{border-top:1px solid var(--line);padding:12px 16px;display:grid;gap:8px;padding-right:max(16px,env(safe-area-inset-right,0px))}
+.chat-in textarea{font-size:16px;min-height:64px;max-height:180px}
+.chat-row{display:flex;gap:8px}
+.chat-row button{flex:1;padding:12px;font-size:16px}
+.mic{flex:0 0 auto!important;width:56px}
+.mic.on{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);animation:pulse 1.2s infinite}
+@keyframes pulse{50%{opacity:.6}}
+.pinbox{padding:20px 16px;display:grid;gap:10px;font-size:15px}
+@media (prefers-reduced-motion:reduce){.mic.on{animation:none}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 <style>body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
@@ -302,6 +323,23 @@ textarea{resize:vertical;min-height:70px}
     <div class="pages" id="pages"></div>
   </main>
 </div>
+<button class="fab" id="fab" aria-label="Otwórz asystenta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a8 8 0 0 1-11.8 7L4 20l1.1-4.6A8 8 0 1 1 21 12z"/></svg>Utwórz ofertę rozmową</button>
+<section class="chat" id="chat" hidden aria-label="Asystent ofert">
+  <div class="chat-hd"><b>Asystent ofert</b><div style="display:flex;gap:6px"><button class="small" id="chatReset">Od nowa</button><button class="small" id="chatClose" aria-label="Zamknij">Zamknij</button></div></div>
+  <div class="pinbox" id="pinbox" hidden>
+    <span>Wpisz kod dostępu do asystenta. Wystarczy zrobić to raz na tym urządzeniu.</span>
+    <input id="pinIn" type="password" inputmode="numeric" autocomplete="off" placeholder="Kod dostępu">
+    <button class="primary" id="pinOk">Zapisz kod</button>
+  </div>
+  <div class="chat-log" id="chatLog" aria-live="polite"></div>
+  <div class="chat-in" id="chatIn">
+    <textarea id="chatText" placeholder="Napisz albo kliknij mikrofon i powiedz…" aria-label="Wiadomość"></textarea>
+    <div class="chat-row">
+      <button class="mic" id="mic" aria-label="Mów" title="Mów" hidden>🎤</button>
+      <button class="primary" id="chatSend">Wyślij</button>
+    </div>
+  </div>
+</section>
 <div id="render" aria-hidden="true"></div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -783,6 +821,86 @@ $("saved").addEventListener("click", e=>{
     else { r.dataset.sure = "1"; r.textContent = "Na pewno?"; }
   }
 });
+
+/* ===== Asystent ===== */
+const API = "https://asystent.krysan.eu";
+const API_READY = false; // włączyć po wdrożeniu Workera
+if(!API_READY) $("fab").hidden = true;
+let chatMsgs = [];
+function chatAdd(role, text){
+  if(role !== "sys") chatMsgs.push({role, content:text});
+  const d = document.createElement("div"); d.className = "msg " + (role==="user"?"u":role==="assistant"?"a":"sys"); d.textContent = text;
+  $("chatLog").appendChild(d); $("chatLog").scrollTop = 1e9;
+}
+function chatGreet(){
+  $("chatLog").innerHTML = ""; chatMsgs = [];
+  chatAdd("assistant", S.client.company
+    ? `Dzień dobry! Kontynuujemy ofertę dla ${S.client.company}. Co mam zmienić albo dopisać?`
+    : "Dzień dobry! Przygotujmy ofertę. Dla jakiej firmy ma być ta oferta?");
+}
+function pinGet(){ return store.get("krysan_pin") || ""; }
+function chatOpen(){
+  $("chat").hidden = false; $("fab").hidden = true;
+  const need = !pinGet();
+  $("pinbox").hidden = !need; $("chatIn").hidden = need; $("chatLog").hidden = need;
+  if(!need){ if(!chatMsgs.length) chatGreet(); $("chatText").focus(); } else $("pinIn").focus();
+}
+$("fab").onclick = chatOpen;
+$("chatClose").onclick = ()=>{ $("chat").hidden = true; $("fab").hidden = !API_READY; };
+$("chatReset").onclick = chatGreet;
+$("pinOk").onclick = ()=>{ const v = $("pinIn").value.trim(); if(!v) return; store.set("krysan_pin", v); $("pinIn").value=""; chatOpen(); };
+
+function applyUpdate(u){
+  if(u.model && CATALOG[u.model] && u.model !== S.model){
+    const keep = {offer:S.offer, client:S.client, seller:S.seller, terms:S.terms};
+    S = fromModel(u.model, keep); S.offer.from = CATALOG[u.model].from;
+  }
+  ["client","product","offer","terms"].forEach(k=>{ if(u[k]) Object.assign(S[k], u[k]); });
+  if(u.price){ if(u.price.base!=null) S.price.base = +u.price.base||0; if(u.price.discount!=null) S.price.discount = +u.price.discount||0; }
+  (u.options||[]).forEach(o=>{
+    if(!o.name) return;
+    const f = S.opts.find(x=>x.n.trim().toLowerCase() === o.name.trim().toLowerCase());
+    if(f){ if(o.price!=null) f.p = +o.price||0; f.on = o.on !== false; if(o.group) f.g = o.group; }
+    else if(o.on !== false) S.opts.push({g:o.group||"Inne", n:o.name, p:+o.price||0, on:true});
+  });
+  (u.standard_add||[]).forEach(x=>{ if(x && !S.std.includes(x)) S.std.push(x); });
+}
+
+async function chatSend(){
+  const text = $("chatText").value.trim(); if(!text) return;
+  $("chatText").value = ""; chatAdd("user", text);
+  const btn = $("chatSend"); btn.disabled = true;
+  const wait = document.createElement("div"); wait.className = "msg sys"; wait.textContent = "Asystent pisze…"; $("chatLog").appendChild(wait);
+  try{
+    const state = clone(S); state.photos = state.photos.length + " zdjęć";
+    const catalog = Object.fromEntries(Object.entries(CATALOG).map(([k,m])=>[k, m.label]));
+    let msgs = chatMsgs.slice(); while(msgs.length && msgs[0].role !== "user") msgs.shift();
+    const r = await fetch(API, {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({pin:pinGet(), messages:msgs, state, catalog})});
+    wait.remove();
+    if(r.status === 401){ store.set("krysan_pin",""); chatAdd("sys","Kod dostępu jest nieprawidłowy. Wpisz go ponownie."); chatOpen(); return; }
+    if(!r.ok) throw new Error(r.status);
+    const d = await r.json();
+    (d.updates||[]).forEach(applyUpdate);
+    if((d.updates||[]).length){ fillForm(); changed(); }
+    chatAdd("assistant", d.text || "Zapisałem zmiany w ofercie.");
+  }catch(e){
+    wait.remove();
+    chatAdd("sys", "Nie udało się połączyć z asystentem. Sprawdź internet i spróbuj ponownie.");
+  }finally{ btn.disabled = false; $("chatText").focus(); }
+}
+$("chatSend").onclick = chatSend;
+$("chatText").addEventListener("keydown", e=>{ if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); chatSend(); } });
+
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+if(SR){
+  const rec = new SR(); rec.lang = "pl-PL"; rec.interimResults = true; rec.continuous = false;
+  let base = "", on = false;
+  rec.onresult = e=>{ let t=""; for(const r of e.results) t += r[0].transcript; $("chatText").value = (base ? base+" " : "") + t; };
+  rec.onend = ()=>{ on = false; $("mic").classList.remove("on"); };
+  rec.onerror = ()=>{ on = false; $("mic").classList.remove("on"); };
+  $("mic").hidden = false;
+  $("mic").onclick = ()=>{ if(on){ rec.stop(); return; } base = $("chatText").value.trim(); on = true; $("mic").classList.add("on"); try{ rec.start(); }catch(e){ on=false; $("mic").classList.remove("on"); } };
+}
 
 /* ===== Zakładki (telefon) ===== */
 function tab(v){
