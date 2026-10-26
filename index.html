@@ -230,6 +230,44 @@ textarea{resize:vertical;min-height:70px}
 .t-techniczny .contact{border-radius:0}
 .t-techniczny .ft{border-top-color:#1d1d1d}
 
+/* ===== Motyw A: Nowoczesny ===== */
+.pg.nw1{padding:0}
+.pg.nw1 .pg-body{gap:0}
+.pg.nw1 .ft{margin:14px 54px 0}
+.nw-photo{height:470px;background:#ddd center/cover no-repeat}
+.nw-in{padding:26px 54px 0;display:flex;flex-direction:column;gap:22px}
+.hdn{display:flex;justify-content:space-between;align-items:center;gap:20px}
+.t-nowoczesny .logo{font-size:20px;color:var(--p-ink)}
+.t-nowoczesny .logo::before{background:var(--p-red)}
+.nw-title{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;border-bottom:1px solid #e4e4e4;padding-bottom:18px}
+.nw-title>div:first-child{flex:1;min-width:0}
+.nw-title h1{font-family:var(--display);font-weight:300;font-size:46px;line-height:1;margin:8px 0 6px;letter-spacing:-.01em}
+.nw-price{text-align:right;flex:none}
+.nw-cl{margin-top:10px;font-size:13px;color:var(--p-muted)}
+.nw-cl b{color:var(--p-ink)}
+.nw-price span{display:block;font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--p-muted);font-weight:600}
+.nw-price b{display:block;font-family:var(--display);font-weight:500;font-size:30px;color:var(--p-red);margin-top:4px;white-space:nowrap}
+.t-nowoczesny .eye{color:var(--p-muted);display:flex;align-items:center;gap:8px}
+.t-nowoczesny .eye::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--p-red)}
+.t-nowoczesny .keys{border:0;grid-template-columns:repeat(3,1fr)}
+.t-nowoczesny .key{border-left:0;padding-left:0}
+.t-nowoczesny .key b{font-weight:500;font-size:18px}
+.t-nowoczesny .hdn .co2{font-size:10.5px}
+.t-nowoczesny .ttl{border-bottom:1px solid #e4e4e4;padding-bottom:14px}
+.t-nowoczesny .ttl h1{font-weight:300;font-size:34px}
+.t-nowoczesny .h2::after{background:#e4e4e4}
+.t-nowoczesny .tbl td{padding:9px 0;border-bottom-color:#ececec}
+.t-nowoczesny .tbl tr.grp td{color:var(--p-muted)}
+.t-nowoczesny .cols2 li{border-bottom-color:#ececec}
+.t-nowoczesny .cols2 li::before{width:5px;height:5px;border-radius:50%;top:9px}
+.t-nowoczesny .sum .gross{background:none;color:var(--p-red);border-top:2px solid var(--p-red);border-radius:0;padding:10px 0;font-size:20px;font-weight:500}
+.t-nowoczesny .sum .gross span:last-child{color:var(--p-red)}
+.t-nowoczesny .contact{background:#f4f4f4;color:var(--p-ink)}
+.t-nowoczesny .contact h3,.t-nowoczesny .contact .who b{color:var(--p-ink);font-weight:500}
+.t-nowoczesny .contact p{color:#555}
+.t-nowoczesny .contact .who{border-left-color:var(--p-red)}
+.t-nowoczesny .hero{border-radius:0}
+
 #render{position:fixed;left:-10000px;top:0}
 
 @media (max-width:900px){
@@ -605,7 +643,7 @@ function fillForm(){
   sel.innerHTML = Object.entries(CATALOG).map(([k,m])=>`<option value="${k}">${esc(m.label)}</option>`).join("");
   sel.value = S.model;
   $("o_theme").innerHTML = Object.entries(THEMES).map(([k,v])=>`<option value="${k}">${esc(v)}</option>`).join("");
-  if(!THEMES[S.offer.theme]) S.offer.theme = "klasyczny";
+  if(!THEMES[S.offer.theme]) S.offer.theme = "premium";
   document.querySelectorAll("[data-b]").forEach(el=>{
     const v = getP(el.dataset.b);
     if(el.type === "checkbox") el.checked = !!v; else el.value = v ?? "";
@@ -708,16 +746,17 @@ function totals(){
 }
 
 const THEMES = {
-  klasyczny:"A · Klasyczny (czarno-czerwony)",
+  nowoczesny:"A · Nowoczesny (zdjęcie na górze)",
   premium:"B · Premium (jak oferta BMW)",
   foto:"C · Okładka ze zdjęciem",
   techniczny:"D · Karta techniczna"
 };
-const theme = () => THEMES[S.offer.theme] ? S.offer.theme : "klasyczny";
+const theme = () => THEMES[S.offer.theme] ? S.offer.theme : "premium";
 
 function header(){
   const s = S.seller, t = theme();
   if(t === "premium") return `<div class="hdp"><div><div class="hdp-name">${esc(s.company)}</div><div class="hdp-sub">Dealer autotransporterów Aksoylu</div></div><div class="logo">KRYSAN</div></div>`;
+  if(t === "nowoczesny") return `<div class="hdn"><div class="logo">KRYSAN</div><div class="co2">${esc(s.company)} · ${esc(s.address)}<br>NIP ${esc(s.nip)} · tel. ${esc(s.phone)}</div></div>`;
   if(t === "foto" || t === "techniczny") return `<div class="hdl"><div class="logo">KRYSAN</div><div class="co2">${esc(s.company)} · ${esc(s.address)}<br>NIP ${esc(s.nip)} · tel. ${esc(s.phone)}</div></div>`;
   return `<div class="hd"><div class="logo">KRYSAN</div>
     <div class="co"><b>${esc(s.company.toUpperCase())}</b><br>${esc(s.address)}<br>NIP: ${esc(s.nip)} | Tel: ${esc(s.phone)}</div></div>`;
@@ -745,7 +784,21 @@ function pages(){
   const sumP = `<div><div class="h2">Opis produktu</div><p class="lead-p">${esc(P.summary)}</p></div>`;
 
   let p1, p1cls = "";
-  if(th === "premium"){
+  if(th === "nowoczesny"){
+    p1cls = "nw1";
+    p1 = `<div class="nw-photo" style="background-image:url('${photos[0]||""}')"></div>
+      <div class="nw-in">
+        <div class="hdn"><div class="logo">KRYSAN</div>${meta}</div>
+        <div class="nw-title"><div><div class="eye">Oferta handlowa</div><h1>${esc(P.name)}</h1><div class="sub">${esc(P.type)}</div>${hasClient ? `<div class="nw-cl">Dla: <b>${esc(C.company||C.person)}</b></div>` : ""}</div>
+          <div class="nw-price"><span>Cena netto</span><b>${priceTxt}</b></div></div>
+        <div class="keys k3">
+          <div class="key"><span>Rok produkcji</span><b>${esc(P.year)}</b></div>
+          <div class="key"><span>Pojemność</span><b>${esc(P.capacity||"–")}</b></div>
+          <div class="key"><span>Odbiór</span><b>${pickup}</b></div>
+        </div>
+        ${sumP}
+      </div>`;
+  } else if(th === "premium"){
     const cl = [C.company, C.person, C.address].filter(Boolean).map(esc).join("<br>");
     p1 = `${header()}
       <div class="letter"><div class="addr">${cl || "&nbsp;"}</div>${meta}</div>
