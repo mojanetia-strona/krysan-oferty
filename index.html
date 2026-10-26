@@ -168,6 +168,18 @@ textarea{resize:vertical;min-height:70px}
     <div class="status" id="status" aria-live="polite"></div>
 
     <details open>
+      <summary>Szablony</summary>
+      <div class="fields">
+        <div class="list" id="tpls"></div>
+        <div class="lrow std">
+          <input id="tplName" placeholder="Nazwa szablonu, np. VECTUS 6 pełne wyposażenie" aria-label="Nazwa szablonu">
+          <button class="small" id="tplSave">Zapisz</button>
+        </div>
+        <span class="status">Szablon zapamiętuje model, zdjęcia, ceny, opcje, specyfikację i warunki. Bez danych klienta.</span>
+      </div>
+    </details>
+
+    <details open>
       <summary>Model</summary>
       <div class="fields">
         <label>Model z katalogu
@@ -708,6 +720,41 @@ function bumpSeq(){
   if(m) store.set("krysan_seq", Math.max(store.get("krysan_seq")||0, +m[1]));
 }
 
+/* ===== Szablony ===== */
+function tplList(){ return store.get("krysan_templates") || []; }
+function drawTpls(){
+  const L = tplList();
+  $("tpls").innerHTML = L.length ? L.map((t,i)=>`<div class="sitem"><div><b>${esc(t.name)}</b><span>${esc(t.state.product.name)}${t.state.price.base?" · "+money(t.state.price.base,t.state.offer.currency):""}</span></div>
+    <button class="small primary" data-tuse="${i}">Nowa oferta</button><button class="small ghost" data-trm="${i}">Usuń</button></div>`).join("")
+    : `<span class="status">Brak szablonów. Skonfiguruj ofertę i zapisz ją poniżej.</span>`;
+}
+$("tplSave").onclick = ()=>{
+  const name = $("tplName").value.trim() || S.product.name;
+  const t = clone(S);
+  t.client = {company:"", person:"", nip:"", address:"", contact:""};
+  delete t.offer.no; delete t.offer.date; delete t.offer.valid;
+  const L = tplList().filter(x=>x.name !== name);
+  L.unshift({name, state:t});
+  if(store.set("krysan_templates", L)){ $("tplName").value = ""; drawTpls(); status(`Zapisano szablon „${name}”.`); }
+  else status("Brak miejsca w przeglądarce. Usuń stare szablony lub zmniejsz liczbę zdjęć.");
+};
+$("tpls").addEventListener("click", e=>{
+  const u = e.target.closest("[data-tuse]"), r = e.target.closest("[data-trm]");
+  if(u){
+    bumpSeq();
+    const t = clone(tplList()[+u.dataset.tuse].state);
+    const now = new Date();
+    t.offer.no = nextNo(); t.offer.date = iso(now); t.offer.valid = iso(new Date(now.getTime()+14*864e5));
+    S = t; fillForm(); changed();
+    status(`Nowa oferta ${S.offer.no} z szablonu. Uzupełnij dane klienta.`);
+    const c = $("c_co"); c.closest("details").open = true; c.focus();
+  }
+  if(r){
+    if(r.dataset.sure){ const L = tplList(); L.splice(+r.dataset.trm,1); store.set("krysan_templates",L); drawTpls(); }
+    else { r.dataset.sure = "1"; r.textContent = "Na pewno?"; }
+  }
+});
+
 /* ===== Zapisane oferty ===== */
 function savedList(){ return store.get("krysan_offers") || []; }
 function drawSaved(){
@@ -747,7 +794,7 @@ matchMedia("(max-width:900px)").addEventListener("change", e=>{ if(!e.matches){ 
 if(matchMedia("(max-width:900px)").matches) $("view").hidden = true;
 
 addEventListener("resize", ()=>{ clearTimeout(t1); t1=setTimeout(render,150); });
-fillForm(); drawSaved();
+fillForm(); drawSaved(); drawTpls();
 document.fonts.ready.then(render); render();
 </script>
 
